@@ -1513,13 +1513,6 @@ button:active:not(:disabled) {
   background: #e8dfef;
   margin: 0 7px;
 }
-.zoom-button {
-  font-size: 8px;
-  color: #566172;
-  gap: 6px;
-  min-width: 53px;
-  padding: 5px;
-}
 .canvas-viewport {
   flex: 1;
   overflow: auto;
@@ -3315,9 +3308,6 @@ button:active:not(:disabled) {
 .canvas-breadcrumb {
   font-size: 10px;
 }
-.zoom-button {
-  font-size: 10px;
-}
 .general-prompt-heading {
   font-size: 11px;
 }
@@ -3505,4 +3495,92 @@ button:active:not(:disabled) {
 }
 .canvas-node.node-button {
   font-family: inherit;
+}
+
+/* Editable zoom and keyboard-accessible presets. */
+.zoom-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  height: 29px;
+  background: transparent;
+}
+.zoom-control:hover,
+.zoom-control:focus-within,
+.zoom-control.is-open {
+  background: white;
+  border-color: var(--selection-border);
+}
+.zoom-control input {
+  width: 54px;
+  min-width: 0;
+  height: 27px;
+  padding: 0 3px 0 7px;
+  border: 0;
+  border-radius: 5px 0 0 5px;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.zoom-control input:focus {
+  box-shadow: none;
+}
+.zoom-toggle {
+  height: 27px;
+  width: 23px;
+  padding: 0;
+  border-radius: 0 5px 5px 0;
+  color: #566172;
+}
+.zoom-toggle:hover {
+  background: var(--selection-soft);
+  color: var(--selection);
+}
+.zoom-options {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  width: 196px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  box-shadow: 0 8px 28px #1f00621a;
+  z-index: 20;
+}
+.zoom-options button {
+  width: 100%;
+  min-height: 31px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text);
+}
+.zoom-options button:hover,
+.zoom-options button:focus-visible,
+.zoom-options button[aria-pressed="true"] {
+  background: var(--selection-soft);
+  color: var(--selection);
+}
+.zoom-options .zoom-fit {
+  justify-content: flex-start;
+  gap: 9px;
+}
+.zoom-options-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 5px 4px;
+}
+.zoom-hint {
+  display: block;
+  padding: 9px 9px 5px;
+  border-top: 1px solid var(--border);
+  margin-top: 5px;
+  color: #687386;
+  font-size: 9px;
 }

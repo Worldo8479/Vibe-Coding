@@ -59,6 +59,7 @@ import {
   exportHTML,
 } from "./Canvas";
 import { BackendGraph, stepIcons } from "./Backend";
+import { ZoomControl } from "./ZoomControl";
 import "./styles.css";
 const api = async (url, options = {}, token) => {
   const response = await fetch(url, {
@@ -375,6 +376,36 @@ function App() {
     observer.observe(artboardRef.current);
     return () => observer.disconnect();
   }, [project?.id, area, device]);
+  const fitCanvas = () => {
+    const viewport = canvasRef.current;
+    if (!viewport || !project) return;
+    const width =
+      area === "frontend"
+        ? device === "mobile"
+          ? 390
+          : 800
+        : Math.max(850, ...project.backend.nodes.map((node) => node.x + 300));
+    const height =
+      area === "frontend"
+        ? canvasHeight
+        : Math.max(780, ...project.backend.nodes.map((node) => node.y + 160));
+    const style = getComputedStyle(viewport);
+    const availableWidth =
+      viewport.clientWidth -
+      parseFloat(style.paddingLeft) -
+      parseFloat(style.paddingRight);
+    const availableHeight =
+      viewport.clientHeight -
+      parseFloat(style.paddingTop) -
+      parseFloat(style.paddingBottom);
+    setZoom(
+      Math.max(
+        0.1,
+        Math.min(1, availableWidth / width, availableHeight / height),
+      ),
+    );
+    viewport.scrollTo({ top: 0, left: 0 });
+  };
   const openProject = (p) => {
     setProject(p);
     setArea("frontend");
@@ -1293,28 +1324,16 @@ function App() {
                   </div>
                 )}
                 <div className="toolbar-separator" />
-                <button
-                  className="zoom-button"
-                  onClick={() =>
-                    setZoom((z) =>
-                      z >= 1 ? 0.6 : Math.round((z + 0.1) * 100) / 100,
-                    )
-                  }
-                >
-                  {Math.round(zoom * 100)}%<ChevronDown size={12} />
-                </button>
+                <ZoomControl
+                  key={`${project.id}-${area}`}
+                  zoom={zoom}
+                  onChange={setZoom}
+                  onFit={fitCanvas}
+                />
                 <IconButton
                   icon={Maximize2}
                   label="Fit canvas"
-                  onClick={() =>
-                    setZoom(
-                      Math.min(
-                        0.9,
-                        (canvasRef.current.clientWidth - 70) /
-                          (area === "frontend" ? 800 : 850),
-                      ),
-                    )
-                  }
+                  onClick={fitCanvas}
                 />
                 <IconButton
                   icon={Undo2}
