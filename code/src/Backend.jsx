@@ -47,7 +47,11 @@ export function BackendGraph({
               refY="3"
               orient="auto"
             >
-              <path d="M0 0L6 3L0 6" fill="none" stroke="#b8b4cc" />
+              <path
+                d="M0 0L6 3L0 6"
+                fill="none"
+                stroke="var(--selection-border)"
+              />
             </marker>
           </defs>
           {backend.edges.map((edge, i) => {
@@ -63,7 +67,7 @@ export function BackendGraph({
                 <path
                   d={`M${x1},${y1} C${x1},${(y1 + y2) / 2} ${x2},${(y1 + y2) / 2} ${x2},${y2 - 7}`}
                   fill="none"
-                  stroke="#b8b4cc"
+                  stroke="var(--selection-border)"
                   strokeWidth="1.6"
                   markerEnd="url(#arrow)"
                 />
@@ -73,14 +77,14 @@ export function BackendGraph({
                   width="54"
                   height="18"
                   rx="9"
-                  fill="#f0eff5"
+                  fill="var(--selection-soft)"
                 />
                 <text
                   x={(x1 + x2) / 2}
                   y={(y1 + y2) / 2 + 3}
                   textAnchor="middle"
                   fontSize="9"
-                  fill="#9992ac"
+                  fill="var(--selection)"
                 >
                   {i === 0 ? "request" : "success"}
                 </text>

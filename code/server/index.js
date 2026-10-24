@@ -334,7 +334,7 @@ server.on("upgrade", (req, socket, head) => {
       id: uid(),
       projectId: p.id,
       name: (url.searchParams.get("name") || "Teammate").slice(0, 40),
-      color: ["#8770df", "#d9925d", "#529c9e", "#d17299"][peers.size % 4],
+      color: ["#0b78b3", "#d73220", "#1f0062", "#68150a"][peers.size % 4],
       cursor: null,
       selection: null,
       area: "frontend",

@@ -628,7 +628,7 @@ function App() {
   };
   const peerList = peers.length
     ? peers
-    : [{ id: "self", name, color: "#8770df" }];
+    : [{ id: "self", name, color: "#0b78b3" }];
   if (loading)
     return (
       <div className="loading-screen">
