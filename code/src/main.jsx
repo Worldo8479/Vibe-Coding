@@ -758,7 +758,7 @@ function App() {
               <div>
                 <span className="mode-label">
                   <span className={`status-dot ${config.ai ? "green" : ""}`} />
-                  {config.ai ? "AI connected" : "Demo workspace"}
+                  {config.ai ? config.mode : "Demo workspace"}
                 </span>
                 <IconButton
                   icon={CircleHelp}
@@ -1247,7 +1247,7 @@ function App() {
             <div className="editor-sidebar-bottom">
               <span className={`mode-pill ${config.ai ? "ai" : ""}`}>
                 <Sparkles size={12} />
-                {config.ai ? "AI connected" : "Demo mode"}
+                {config.ai ? config.mode : "Demo mode"}
               </span>
               <button onClick={() => setModal("help")}>
                 <CircleHelp size={14} />
@@ -1883,8 +1883,8 @@ function App() {
           </div>
           {!config.ai && (
             <p className="modal-note">
-              Demo mode creates a starter template. Add a server API key to
-              generate unique apps from any prompt.
+              Demo mode creates a starter template. Connect a local Ollama model
+              or add a server API key to generate apps from your prompts.
             </p>
           )}
           <div className="modal-actions">
@@ -1992,12 +1992,16 @@ function App() {
           </div>
           <div className="help-demo">
             <strong>
-              {config.ai ? "AI is connected" : "You’re in demo mode"}
+              {config.ai
+                ? `${config.mode} is configured`
+                : "You’re in demo mode"}
             </strong>
             <p>
               {config.ai
-                ? "Your server is configured for AI generation. Prompts are sent to the configured model."
-                : 'Try “make it blue”, “make it bigger”, “add more spacing”, or Change text to "Hello world". For open-ended AI generation, set OPENAI_API_KEY in code/.env and restart the server.'}
+                ? config.provider === "ollama"
+                  ? `Using ${config.model} through Ollama on this Mac. Prompts stay on the local server. The first response can take longer while the model loads.`
+                  : "Your server is configured for OpenAI generation. Prompts are sent to the configured model."
+                : 'Try “make it blue”, “make it bigger”, “add more spacing”, or Change text to "Hello world". For local AI, set AI_PROVIDER=ollama in code/.env and start Ollama. Alternatively, set OPENAI_API_KEY for OpenAI. Restart Weave after configuration changes.'}
             </p>
           </div>
         </Modal>
@@ -2134,7 +2138,7 @@ function App() {
           </div>
           <div className="modal-actions">
             <span className="modal-note">
-              {config.ai ? "AI connected" : "Demo edits available"}
+              {config.ai ? config.mode : "Demo edits available"}
             </span>
             <button
               className="primary-button"

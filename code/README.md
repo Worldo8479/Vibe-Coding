@@ -30,13 +30,35 @@ npm test       # model tests and a temporary two-client integration server
 - Durable local projects and collection records in `.data/workspace.json`, written using an atomic file replacement.
 - Keyboard-accessible controls, dialog focus trapping, responsive application layout, and reduced-motion support.
 
-## Enable AI generation
+## Local AI with Ollama
+
+Weave can run against a downloaded model on your Mac without an OpenAI API key or API-credit charges. Install [Ollama](https://ollama.com/download), open it, and download the coding model:
+
+```sh
+ollama pull qwen2.5-coder:7b
+```
+
+Add these settings to `code/.env` and restart Weave:
+
+```env
+AI_PROVIDER=ollama
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=qwen2.5-coder:7b
+```
+
+The model download is about 4.7 GB. Generation uses your computer’s memory and processing power. The first prompt can be slower while the model loads. Double-click edits send only the selected element to keep local generation smaller and faster. Weave uses a 16K context window and allows up to five minutes for a local request. Local mode sends no OpenAI credential, requires a loopback Ollama address, and never falls back to a paid provider. Everyone collaborating on this Weave server uses the model on the server’s Mac; they do not each need Ollama.
+
+Run `npm run check:local` from `code` to verify real frontend edits, backend edits, and initial generation through Weave's HTTP API. It also checks live collaboration updates, disk persistence, and execution of the generated backend validation. The check starts a temporary server with disposable storage, leaves saved projects unchanged, and uses the local model only.
+
+The UI displays **Local AI** when configured. If Ollama is stopped or the model is missing, a prompt shows the relevant startup/download instructions. Configuration alone does not verify model readiness. Set `AI_PROVIDER=demo` to use deterministic edits, or `AI_PROVIDER=openai` to use the paid API.
+
+## OpenAI generation
 
 Copy `.env.example` to `.env` inside `code`, add your own `OPENAI_API_KEY`, and restart the server. The key is read on the server and never sent to a browser. You can change `OPENAI_MODEL` to a Responses-compatible model available to your account; the default is `gpt-4.1-mini`.
 
 The server uses the [OpenAI Responses API with JSON output](https://developers.openai.com/api/docs/guides/structured-outputs). All returned canvas trees and backend graphs are validated before applying them. Scoped prompts are restricted to the selected element; concurrent revisions cause generation to be rejected without overwriting someone else’s changes. Provider failures are surfaced in the UI.
 
-Without a key, the app explicitly displays **Demo mode**. Initial prompts choose a dashboard, portfolio, or store template. Deterministic edits include:
+With `AI_PROVIDER=demo` (or no provider and no OpenAI key), the app displays **Demo mode**. Initial prompts choose a dashboard, portfolio, or store template. Deterministic edits include:
 
 - `Make it blue`, `Make it green`, or a six-digit hex color.
 - `Change text to "Your new heading"`.
@@ -75,6 +97,8 @@ src/main.jsx          Application shell, dashboard, editor, dialogs, client stat
 src/Canvas.jsx        Component-tree renderer, layers, thumbnails, HTML export
 src/Backend.jsx       Backend flowchart and drag interaction
 src/styles.css        Responsive UI system
+server/ai-provider.js OpenAI and local Ollama adapters
+server/generation.js  Full-project and selected-element generation prompts
 server/index.js       HTTP API, WebSocket collaboration, persistence, AI adapter
 server/model.js       Starter documents, validators, demo edits, workflow runtime
 tests/                Unit and two-client integration tests

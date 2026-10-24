@@ -54,6 +54,7 @@ test("API, live rooms, conflicts, undo and disk persistence", async () => {
         HOST: "127.0.0.1",
         DATA_DIR: dir,
         OPENAI_API_KEY: "",
+        AI_PROVIDER: "demo",
       },
       stdio: "pipe",
     });

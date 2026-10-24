@@ -1,5 +1,7 @@
 import "dotenv/config";
+import { createAIResponse, resolveAIConfig } from "./ai-provider.js";
 import express from "express";
+import { generationInstructions, expandGeneratedResult } from "./generation.js";
 import { createServer } from "node:http";
 import { WebSocketServer, WebSocket } from "ws";
 import {
@@ -21,6 +23,7 @@ import {
   runFlow,
 } from "./model.js";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const aiConfig = resolveAIConfig();
 const dataDir = process.env.DATA_DIR || path.join(root, ".data");
 mkdirSync(dataDir, { recursive: true });
 const dataFile = path.join(dataDir, "workspace.json");
@@ -107,8 +110,10 @@ function record(p, actor, text, previous) {
 }
 app.get("/api/config", (_, res) =>
   res.json({
-    ai: !!process.env.OPENAI_API_KEY,
-    mode: process.env.OPENAI_API_KEY ? "AI connected" : "Demo mode",
+    ai: aiConfig.ai,
+    mode: aiConfig.mode,
+    provider: aiConfig.provider,
+    model: aiConfig.ai ? aiConfig.model : null,
   }),
 );
 app.get("/api/projects", (_, res) => res.json(store.projects));
@@ -139,12 +144,10 @@ app.patch("/api/projects/:id", (req, res) => {
   const previous = structuredClone(p);
   const body = req.body;
   if (Number.isInteger(body.revision) && body.revision !== p.revision)
-    return res
-      .status(409)
-      .json({
-        error:
-          "A teammate changed this project. Your workspace has refreshed; try again.",
-      });
+    return res.status(409).json({
+      error:
+        "A teammate changed this project. Your workspace has refreshed; try again.",
+    });
   try {
     if (body.name !== undefined) {
       if (typeof body.name !== "string" || !body.name.trim())
@@ -188,11 +191,9 @@ app.post("/api/projects/:id/undo", (req, res) => {
   const p = projectFor(req, res);
   if (!p) return;
   if (req.body.revision !== p.revision)
-    return res
-      .status(409)
-      .json({
-        error: "The project changed. Review the latest version before undoing.",
-      });
+    return res.status(409).json({
+      error: "The project changed. Review the latest version before undoing.",
+    });
   const previous = p.history.pop();
   if (!previous)
     return res.status(400).json({ error: "No changes to undo yet" });
@@ -228,40 +229,21 @@ app.post("/api/projects/:id/generate", async (req, res) => {
       .status(400)
       .json({ error: "Use a prompt between 1 and 4,000 characters" });
   if (generating.has(p.id))
-    return res
-      .status(409)
-      .json({
-        error:
-          "A change is already being generated. Try again when it finishes.",
-      });
+    return res.status(409).json({
+      error: "A change is already being generated. Try again when it finishes.",
+    });
   generating.add(p.id);
   broadcast(p.id, { type: "generating", actor, active: true });
   const revision = p.revision;
   try {
     let result;
-    if (!process.env.OPENAI_API_KEY)
-      result = demoEdit(p, prompt, targetId, area);
+    if (!aiConfig.ai) result = demoEdit(p, prompt, targetId, area);
     else {
-      const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        signal: AbortSignal.timeout(90000),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-          text: { format: { type: "json_object" } },
-          instructions: `You are a collaborative visual app builder. Output JSON with document, backend, summary. Preserve every existing node ID unless removing it. document is a recursive tree {id,type,name,text,style,children}; type must be container,text,button,badge,stat,chart,tasklist,art. style is a React CSS object with string or numeric values; no url(), position, zIndex or pointerEvents. Each node must have children array and style object. stat text is label|value|change. tasklist text is title|task1|task2. Create an attractive, polished interface specific to the prompt, using nested containers and CSS grid/flex. No scripts or external assets. Backend is {nodes,edges}; nodes are {id,type,title,description,x,y,config}, types request/validate/database/transform/response. Single linear path connecting all nodes from exactly one request to exactly one response. Config: request {method,path}; validate {required: comma-separated fields}; database {collection,operation:read or write}; transform {key}; response {status}. Maximum 100 canvas nodes, 20 backend nodes. ${initial ? "Generate both a full frontend and suitable backend from the prompt." : `Edit only the ${area}. ${targetId ? `Only modify node ${targetId} and its descendants; preserve the rest.` : "Apply the requested change."}`} The summary must be concise and honest. Current project JSON: ${JSON.stringify({ document: p.document, backend: p.backend })}`,
-          input: prompt,
-          max_output_tokens: 14000,
-        }),
+      const answer = await createAIResponse({
+        ...aiConfig,
+        prompt,
+        instructions: generationInstructions(p, { targetId, area, initial }),
       });
-      if (!response.ok)
-        throw new Error(
-          `AI provider returned ${response.status}. Check your server API key, model, and account quota.`,
-        );
-      const answer = await response.json();
       if (answer.status !== "completed")
         throw new Error("Generation did not finish. Try a smaller change.");
       const output = answer.output
@@ -269,15 +251,17 @@ app.post("/api/projects/:id/generate", async (req, res) => {
         .filter((c) => c.type === "output_text")
         .map((c) => c.text)
         .join("");
-      result = JSON.parse(output);
+      result = expandGeneratedResult(JSON.parse(output), p, {
+        targetId,
+        area,
+        initial,
+      });
     }
     if (p.revision !== revision)
-      return res
-        .status(409)
-        .json({
-          error:
-            "A teammate edited the project during generation. Nothing was overwritten; please try again.",
-        });
+      return res.status(409).json({
+        error:
+          "A teammate edited the project during generation. Nothing was overwritten; please try again.",
+      });
     validateDocument(result.document);
     validateBackend(result.backend);
     const previous = structuredClone(p);
