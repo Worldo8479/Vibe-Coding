@@ -26,7 +26,7 @@ test("scoped prompts change only the requested element", () => {
     findNode(edited.document, "hero"),
     findNode(p.document, "hero"),
   );
-  assert.equal(findNode(p.document, "cta").style.background, "#7b6ae6");
+  assert.equal(findNode(p.document, "cta").style.background, "#d73220");
 });
 test("quoted text and explicit unsupported demo feedback", () => {
   const p = makeProject("Test");

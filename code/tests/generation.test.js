@@ -33,7 +33,7 @@ test("a scoped result preserves every unselected element and the original projec
   );
   validateDocument(next.document);
   assert.equal(findNode(next.document, "cta").style.background, "#407ce9");
-  assert.equal(findNode(project.document, "cta").style.background, "#7b6ae6");
+  assert.equal(findNode(project.document, "cta").style.background, "#d73220");
   assert.deepEqual(
     findNode(next.document, "metrics"),
     findNode(project.document, "metrics"),

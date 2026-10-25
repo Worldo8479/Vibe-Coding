@@ -171,8 +171,8 @@ export function makeDocument(template = "dashboard", title = "Orbit") {
             { color: "#858991", fontSize: "11px" },
           ),
           node("user", "badge", "Profile", "JD", {
-            background: "#e9e5fb",
-            color: "#7460c3",
+            background: "#e8f3fa",
+            color: "#0b78b3",
             borderRadius: "50%",
             padding: "10px",
             fontSize: "10px",
@@ -213,7 +213,7 @@ export function makeDocument(template = "dashboard", title = "Orbit") {
             ),
           ]),
           node("cta", "button", "Primary button", "+ New project", {
-            background: "#7b6ae6",
+            background: "#d73220",
             color: "#ffffff",
             padding: "11px 15px",
             borderRadius: "6px",
@@ -283,7 +283,7 @@ export function makeDocument(template = "dashboard", title = "Orbit") {
             border: "1px solid #edeef3",
             padding: "22px",
             borderRadius: "8px",
-            color: "#8a78e7",
+            color: "#0b78b3",
           }),
           node(
             "tasks",
@@ -536,7 +536,6 @@ export function demoEdit(project, prompt, targetId, area = "frontend") {
   const lower = prompt.replace(/["“].+?["”]/g, "").toLowerCase();
   const quoted = prompt.match(/["“](.+?)["”]/)?.[1];
   const colors = {
-    purple: "#7b6ae6",
     blue: "#407ce9",
     green: "#34785b",
     orange: "#de8845",
@@ -599,7 +598,7 @@ export function demoEdit(project, prompt, targetId, area = "frontend") {
     }
     if (lower.includes("dark")) {
       next.document.style.background = "#20232c";
-      next.document.style.color = "#f4f3f8";
+      next.document.style.color = "#f4f5f7";
       changed = true;
     }
     if (lower.includes("light")) {
@@ -634,8 +633,8 @@ export function demoEdit(project, prompt, targetId, area = "frontend") {
           {
             padding: "26px",
             marginTop: "20px",
-            background: "#efedf8",
-            color: "#51477e",
+            background: "#f0f2f4",
+            color: "#536272",
             borderRadius: "8px",
           },
         ),
